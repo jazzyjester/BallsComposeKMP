@@ -1,7 +1,11 @@
+import org.jetbrains.kotlin.gradle.plugin.extraProperties
+import org.jetbrains.kotlin.gradle.tasks.DummyFrameworkTask
+
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.compose")
+    id("dev.icerock.mobile.multiplatform-resources")
 }
 
 kotlin {
@@ -21,7 +25,10 @@ kotlin {
         it.binaries.framework {
             baseName = "shared"
             isStatic = true
+            export("dev.icerock.moko:resources:0.23.0")
+            export("dev.icerock.moko:graphics:0.9.0")
         }
+        it.binaries.extraProperties["resource"] = "'build/cocoapods/framework/shared.framework/*.bundle'"
     }
 
     sourceSets {
@@ -33,6 +40,9 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 implementation ("dev.romainguy:kotlin-math:1.5.3")
+
+                api("dev.icerock.moko:resources:0.23.0")
+                api("dev.icerock.moko:resources-compose:0.23.0") // for compose multiplatform
             }
         }
         val commonTest by getting {
@@ -70,4 +80,28 @@ android {
         minSdk = 26
         targetSdk = 33
     }
+}
+
+multiplatformResources {
+    multiplatformResourcesPackage = "com.jazzy.mycomposegame" // required
+}
+
+// TODO move to gradle plugin
+tasks.withType<DummyFrameworkTask>().configureEach {
+    @Suppress("ObjectLiteralToLambda")
+    doLast(object : Action<Task> {
+        override fun execute(task: Task) {
+            task as DummyFrameworkTask
+
+            val frameworkDir = File(task.destinationDir, task.frameworkName.get() + ".framework")
+
+            listOf(
+                "compose-resources-gallery:shared.bundle"
+            ).forEach { bundleName ->
+                val bundleDir = File(frameworkDir, bundleName)
+                bundleDir.mkdir()
+                File(bundleDir, "dummyFile").writeText("dummy")
+            }
+        }
+    })
 }

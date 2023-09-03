@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 
 @Composable
 fun MainGame() {
@@ -38,28 +37,14 @@ fun MainGame() {
 
     Column(modifier = Modifier.background(Color(51, 153, 255)).fillMaxHeight().fillMaxWidth()) {
         Row(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth()) {
-            Button({
-                if (game.gameState == GameState.STOPPED)
-                    game.startGame()
-                else
-                    game.endGame()
-            }) {
-                Text(if(game.gameState == GameState.STOPPED) "Play" else "Stop")
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { game.startGame() }
+            )
+            {
+                Text("Play")
             }
-            Text(
-                game.gameStatus,
-                modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 16.dp),
-                color = Color.White
-            )
-
-            Text(
-                "${(game.totalTime / 1E8).roundToInt() / 10f} seconds.",
-                modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 16.dp),
-                color = Color.White
-            )
-
         }
-
 
         Box(modifier = Modifier
             .background(Color.DarkGray)
@@ -83,7 +68,7 @@ fun MainGame() {
                 }) {
                 game.gameObjects.forEach {
                     when (it) {
-                        is BallData -> Ball(it)
+                        is CardData -> Card(it, game)
                     }
                 }
             }
